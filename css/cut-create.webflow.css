@@ -3509,14 +3509,14 @@ figcaption {
   }
 
   .heading-2 {
-    font-size: .95rem;
+    font-size: 1.2rem;
   }
 
   .heading-2.is-red {
     text-align: center;
     padding-left: 0;
     padding-right: 0;
-    font-size: .95rem;
+    font-size: 1.2rem;
     display: block;
     position: static;
     top: 0%;
@@ -3565,6 +3565,10 @@ figcaption {
     grid-template-columns: 1fr;
   }
 
+  .heading-3, .heading-4 {
+    font-size: 1.2rem;
+  }
+
   .heading-5 {
     text-align: center;
   }
@@ -3576,6 +3580,14 @@ figcaption {
 
   .feature_container.is-top, .feature_container.is-bottom {
     grid-template-columns: 1fr;
+  }
+
+  .heading-6 {
+    font-size: 1.5rem;
+  }
+
+  .paragraph-2 {
+    font-size: 1.2rem;
   }
 
   .card_paragraph.is-big, .card_paragraph.is-small {
@@ -3645,6 +3657,10 @@ figcaption {
     padding-top: 0;
     padding-left: 0;
     padding-right: 0;
+  }
+
+  .paragraph-3, .paragraph-4, .paragraph-5 {
+    font-size: 1.2rem;
   }
 }
 
