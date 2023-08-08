@@ -1925,7 +1925,10 @@ figcaption {
 .footer4_credit-text {
   color: #000;
   background-color: rgba(255, 255, 255, 0);
+  justify-content: center;
+  align-items: center;
   font-size: .875rem;
+  display: flex;
 }
 
 .footer4_link-list {
@@ -2405,6 +2408,10 @@ figcaption {
   display: flex;
 }
 
+.youtube {
+  border-radius: 0;
+}
+
 @media screen and (max-width: 991px) {
   .padding-xlarge {
     padding: 3rem;
@@ -2808,6 +2815,10 @@ figcaption {
   .image_container {
     padding-left: 2rem;
     padding-right: 2rem;
+  }
+
+  .purple-divider {
+    min-height: 45rem;
   }
 
   .padding-section-sm {
@@ -3318,6 +3329,10 @@ figcaption {
     padding-bottom: 1rem;
   }
 
+  .purple-divider {
+    min-height: 42rem;
+  }
+
   .heading-7.is-white {
     font-size: 1.5rem;
   }
@@ -3479,6 +3494,10 @@ figcaption {
     display: none;
   }
 
+  .padding-section-large {
+    border-radius: 0;
+  }
+
   .navbar_container {
     padding-bottom: 1rem;
   }
@@ -3608,6 +3627,10 @@ figcaption {
     padding-right: 0;
   }
 
+  .purple-divider {
+    min-height: 52rem;
+  }
+
   .heading-7.is-black, .heading-7.is-white {
     font-size: 1.7rem;
   }
@@ -3661,6 +3684,11 @@ figcaption {
 
   .paragraph-3, .paragraph-4, .paragraph-5 {
     font-size: 1.2rem;
+  }
+
+  .youtube {
+    border: 1px #000;
+    border-radius: 0;
   }
 }
 

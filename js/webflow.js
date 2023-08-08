@@ -13,204 +13,6 @@
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
 
-  // shared/render/plugins/BackgroundVideo/objectFitPolyfill.basic.js
-  var require_objectFitPolyfill_basic = __commonJS({
-    "shared/render/plugins/BackgroundVideo/objectFitPolyfill.basic.js"() {
-      (function() {
-        if (typeof window === "undefined")
-          return;
-        const edgeVersion = window.navigator.userAgent.match(/Edge\/(\d{2})\./);
-        const edgePartialSupport = edgeVersion ? parseInt(edgeVersion[1], 10) >= 16 : false;
-        const hasSupport = "objectFit" in document.documentElement.style !== false;
-        if (hasSupport && !edgePartialSupport) {
-          window.objectFitPolyfill = function() {
-            return false;
-          };
-          return;
-        }
-        const checkParentContainer = function($container) {
-          const styles = window.getComputedStyle($container, null);
-          const position = styles.getPropertyValue("position");
-          const overflow = styles.getPropertyValue("overflow");
-          const display = styles.getPropertyValue("display");
-          if (!position || position === "static") {
-            $container.style.position = "relative";
-          }
-          if (overflow !== "hidden") {
-            $container.style.overflow = "hidden";
-          }
-          if (!display || display === "inline") {
-            $container.style.display = "block";
-          }
-          if ($container.clientHeight === 0) {
-            $container.style.height = "100%";
-          }
-          if ($container.className.indexOf("object-fit-polyfill") === -1) {
-            $container.className += " object-fit-polyfill";
-          }
-        };
-        const checkMediaProperties = function($media) {
-          const styles = window.getComputedStyle($media, null);
-          const constraints = {
-            "max-width": "none",
-            "max-height": "none",
-            "min-width": "0px",
-            "min-height": "0px",
-            top: "auto",
-            right: "auto",
-            bottom: "auto",
-            left: "auto",
-            "margin-top": "0px",
-            "margin-right": "0px",
-            "margin-bottom": "0px",
-            "margin-left": "0px"
-          };
-          for (const property in constraints) {
-            const constraint = styles.getPropertyValue(property);
-            if (constraint !== constraints[property]) {
-              $media.style[property] = constraints[property];
-            }
-          }
-        };
-        const objectFit = function($media) {
-          const $container = $media.parentNode;
-          checkParentContainer($container);
-          checkMediaProperties($media);
-          $media.style.position = "absolute";
-          $media.style.height = "100%";
-          $media.style.width = "auto";
-          if ($media.clientWidth > $container.clientWidth) {
-            $media.style.top = "0";
-            $media.style.marginTop = "0";
-            $media.style.left = "50%";
-            $media.style.marginLeft = $media.clientWidth / -2 + "px";
-          } else {
-            $media.style.width = "100%";
-            $media.style.height = "auto";
-            $media.style.left = "0";
-            $media.style.marginLeft = "0";
-            $media.style.top = "50%";
-            $media.style.marginTop = $media.clientHeight / -2 + "px";
-          }
-        };
-        const objectFitPolyfill = function(media) {
-          if (typeof media === "undefined" || media instanceof Event) {
-            media = document.querySelectorAll("[data-object-fit]");
-          } else if (media && media.nodeName) {
-            media = [media];
-          } else if (typeof media === "object" && media.length && media[0].nodeName) {
-            media = media;
-          } else {
-            return false;
-          }
-          for (let i = 0; i < media.length; i++) {
-            if (!media[i].nodeName)
-              continue;
-            const mediaType = media[i].nodeName.toLowerCase();
-            if (mediaType === "img") {
-              if (edgePartialSupport)
-                continue;
-              if (media[i].complete) {
-                objectFit(media[i]);
-              } else {
-                media[i].addEventListener("load", function() {
-                  objectFit(this);
-                });
-              }
-            } else if (mediaType === "video") {
-              if (media[i].readyState > 0) {
-                objectFit(media[i]);
-              } else {
-                media[i].addEventListener("loadedmetadata", function() {
-                  objectFit(this);
-                });
-              }
-            } else {
-              objectFit(media[i]);
-            }
-          }
-          return true;
-        };
-        if (document.readyState === "loading") {
-          document.addEventListener("DOMContentLoaded", objectFitPolyfill);
-        } else {
-          objectFitPolyfill();
-        }
-        window.addEventListener("resize", objectFitPolyfill);
-        window.objectFitPolyfill = objectFitPolyfill;
-      })();
-    }
-  });
-
-  // shared/render/plugins/BackgroundVideo/webflow-bgvideo.js
-  var require_webflow_bgvideo = __commonJS({
-    "shared/render/plugins/BackgroundVideo/webflow-bgvideo.js"() {
-      (function() {
-        if (typeof window === "undefined")
-          return;
-        function setAllBackgroundVideoStates(shouldPlay) {
-          if (Webflow.env("design")) {
-            return;
-          }
-          $("video").each(function() {
-            shouldPlay && $(this).prop("autoplay") ? this.play() : this.pause();
-          });
-          $(".w-background-video--control").each(function() {
-            if (shouldPlay) {
-              showPauseButton($(this));
-            } else {
-              showPlayButton($(this));
-            }
-          });
-        }
-        function showPlayButton($btn) {
-          $btn.find("> span").each(function(i) {
-            $(this).prop("hidden", () => i === 0);
-          });
-        }
-        function showPauseButton($btn) {
-          $btn.find("> span").each(function(i) {
-            $(this).prop("hidden", () => i === 1);
-          });
-        }
-        $(document).ready(() => {
-          const watcher = window.matchMedia("(prefers-reduced-motion: reduce)");
-          watcher.addEventListener("change", (e) => {
-            setAllBackgroundVideoStates(!e.matches);
-          });
-          if (watcher.matches) {
-            setAllBackgroundVideoStates(false);
-          }
-          $("video:not([autoplay])").each(function() {
-            $(this).parent().find(".w-background-video--control").each(function() {
-              showPlayButton($(this));
-            });
-          });
-          $(document).on("click", ".w-background-video--control", function(e) {
-            if (Webflow.env("design"))
-              return;
-            const btn = $(e.currentTarget);
-            const video = $(`video#${btn.attr("aria-controls")}`).get(0);
-            if (!video)
-              return;
-            if (video.paused) {
-              const play = video.play();
-              showPauseButton(btn);
-              if (play && typeof play.catch === "function") {
-                play.catch(() => {
-                  showPlayButton(btn);
-                });
-              }
-            } else {
-              video.pause();
-              showPlayButton(btn);
-            }
-          });
-        });
-      })();
-    }
-  });
-
   // shared/render/plugins/BaseSiteModules/tram-min.js
   var require_tram_min = __commonJS({
     "shared/render/plugins/BaseSiteModules/tram-min.js"() {
@@ -243,7 +45,7 @@
           if (void 0 !== b2 && (c2 = b2), void 0 === a2)
             return c2;
           var d2 = c2;
-          return $2.test(a2) || !_.test(a2) ? d2 = parseInt(a2, 10) : _.test(a2) && (d2 = 1e3 * parseFloat(a2)), 0 > d2 && (d2 = 0), d2 === d2 ? d2 : c2;
+          return $.test(a2) || !_.test(a2) ? d2 = parseInt(a2, 10) : _.test(a2) && (d2 = 1e3 * parseFloat(a2)), 0 > d2 && (d2 = 0), d2 === d2 ? d2 : c2;
         }
         function j(a2) {
           U.debug && window && window.console.warn(a2);
@@ -921,7 +723,7 @@
           skewX: [x],
           skewY: [x]
         }), G.transform && G.backface && (Z.z = [w, "translateZ"], Z.rotateZ = [x], Z.scaleZ = [t], Z.perspective = [v]);
-        var $2 = /ms/, _ = /s|\./;
+        var $ = /ms/, _ = /s|\./;
         return a.tram = b;
       }(window.jQuery);
     }
@@ -930,8 +732,8 @@
   // shared/render/plugins/BaseSiteModules/underscore-custom.js
   var require_underscore_custom = __commonJS({
     "shared/render/plugins/BaseSiteModules/underscore-custom.js"(exports, module) {
-      var $2 = window.$;
-      var tram = require_tram_min() && $2.tram;
+      var $ = window.$;
+      var tram = require_tram_min() && $.tram;
       module.exports = function() {
         var _ = {};
         _.VERSION = "1.6.0-Webflow";
@@ -1166,33 +968,33 @@
   // shared/render/plugins/BaseSiteModules/webflow-lib.js
   var require_webflow_lib = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-lib.js"(exports, module) {
-      var Webflow2 = {};
+      var Webflow = {};
       var modules = {};
       var primary = [];
       var secondary = window.Webflow || [];
-      var $2 = window.jQuery;
-      var $win = $2(window);
-      var $doc = $2(document);
-      var isFunction = $2.isFunction;
-      var _ = Webflow2._ = require_underscore_custom();
-      var tram = Webflow2.tram = require_tram_min() && $2.tram;
+      var $ = window.jQuery;
+      var $win = $(window);
+      var $doc = $(document);
+      var isFunction = $.isFunction;
+      var _ = Webflow._ = require_underscore_custom();
+      var tram = Webflow.tram = require_tram_min() && $.tram;
       var domready = false;
       var destroyed = false;
       tram.config.hideBackface = false;
       tram.config.keepInherited = true;
-      Webflow2.define = function(name, factory, options) {
+      Webflow.define = function(name, factory, options) {
         if (modules[name]) {
           unbindModule(modules[name]);
         }
-        var instance = modules[name] = factory($2, _, options) || {};
+        var instance = modules[name] = factory($, _, options) || {};
         bindModule(instance);
         return instance;
       };
-      Webflow2.require = function(name) {
+      Webflow.require = function(name) {
         return modules[name];
       };
       function bindModule(module2) {
-        if (Webflow2.env()) {
+        if (Webflow.env()) {
           isFunction(module2.design) && $win.on("__wf_design", module2.design);
           isFunction(module2.preview) && $win.on("__wf_preview", module2.preview);
         }
@@ -1224,14 +1026,14 @@
           return readyFn !== module2.ready;
         });
       }
-      Webflow2.push = function(ready) {
+      Webflow.push = function(ready) {
         if (domready) {
           isFunction(ready) && ready();
           return;
         }
         secondary.push(ready);
       };
-      Webflow2.env = function(mode) {
+      Webflow.env = function(mode) {
         var designFlag = window.__wf_design;
         var inApp = typeof designFlag !== "undefined";
         if (!mode) {
@@ -1257,24 +1059,24 @@
         }
       };
       var userAgent = navigator.userAgent.toLowerCase();
-      var touch = Webflow2.env.touch = "ontouchstart" in window || window.DocumentTouch && document instanceof window.DocumentTouch;
-      var chrome = Webflow2.env.chrome = /chrome/.test(userAgent) && /Google/.test(navigator.vendor) && parseInt(userAgent.match(/chrome\/(\d+)\./)[1], 10);
-      var ios = Webflow2.env.ios = /(ipod|iphone|ipad)/.test(userAgent);
-      Webflow2.env.safari = /safari/.test(userAgent) && !chrome && !ios;
+      var touch = Webflow.env.touch = "ontouchstart" in window || window.DocumentTouch && document instanceof window.DocumentTouch;
+      var chrome = Webflow.env.chrome = /chrome/.test(userAgent) && /Google/.test(navigator.vendor) && parseInt(userAgent.match(/chrome\/(\d+)\./)[1], 10);
+      var ios = Webflow.env.ios = /(ipod|iphone|ipad)/.test(userAgent);
+      Webflow.env.safari = /safari/.test(userAgent) && !chrome && !ios;
       var touchTarget;
       touch && $doc.on("touchstart mousedown", function(evt) {
         touchTarget = evt.target;
       });
-      Webflow2.validClick = touch ? function(clickTarget) {
-        return clickTarget === touchTarget || $2.contains(clickTarget, touchTarget);
+      Webflow.validClick = touch ? function(clickTarget) {
+        return clickTarget === touchTarget || $.contains(clickTarget, touchTarget);
       } : function() {
         return true;
       };
       var resizeEvents = "resize.webflow orientationchange.webflow load.webflow";
       var scrollEvents = "scroll.webflow " + resizeEvents;
-      Webflow2.resize = eventProxy($win, resizeEvents);
-      Webflow2.scroll = eventProxy($win, scrollEvents);
-      Webflow2.redraw = eventProxy();
+      Webflow.resize = eventProxy($win, resizeEvents);
+      Webflow.scroll = eventProxy($win, scrollEvents);
+      Webflow.redraw = eventProxy();
       function eventProxy(target, types) {
         var handlers = [];
         var proxy = {};
@@ -1306,14 +1108,14 @@
         };
         return proxy;
       }
-      Webflow2.location = function(url) {
+      Webflow.location = function(url) {
         window.location = url;
       };
-      if (Webflow2.env()) {
-        Webflow2.location = function() {
+      if (Webflow.env()) {
+        Webflow.location = function() {
         };
       }
-      Webflow2.ready = function() {
+      Webflow.ready = function() {
         domready = true;
         if (destroyed) {
           restoreModules();
@@ -1321,7 +1123,7 @@
           _.each(primary, callReady);
         }
         _.each(secondary, callReady);
-        Webflow2.resize.up();
+        Webflow.resize.up();
       };
       function callReady(readyFn) {
         isFunction(readyFn) && readyFn();
@@ -1331,7 +1133,7 @@
         _.each(modules, bindModule);
       }
       var deferLoad;
-      Webflow2.load = function(handler) {
+      Webflow.load = function(handler) {
         deferLoad.then(handler);
       };
       function bindLoad() {
@@ -1339,10 +1141,10 @@
           deferLoad.reject();
           $win.off("load", deferLoad.resolve);
         }
-        deferLoad = new $2.Deferred();
+        deferLoad = new $.Deferred();
         $win.on("load", deferLoad.resolve);
       }
-      Webflow2.destroy = function(options) {
+      Webflow.destroy = function(options) {
         options = options || {};
         destroyed = true;
         $win.triggerHandler("__wf_destroy");
@@ -1350,30 +1152,30 @@
           domready = options.domready;
         }
         _.each(modules, unbindModule);
-        Webflow2.resize.off();
-        Webflow2.scroll.off();
-        Webflow2.redraw.off();
+        Webflow.resize.off();
+        Webflow.scroll.off();
+        Webflow.redraw.off();
         primary = [];
         secondary = [];
         if (deferLoad.state() === "pending") {
           bindLoad();
         }
       };
-      $2(Webflow2.ready);
+      $(Webflow.ready);
       bindLoad();
-      module.exports = window.Webflow = Webflow2;
+      module.exports = window.Webflow = Webflow;
     }
   });
 
   // shared/render/plugins/BaseSiteModules/webflow-brand.js
   var require_webflow_brand = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-brand.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
-      Webflow2.define("brand", module.exports = function($2) {
+      var Webflow = require_webflow_lib();
+      Webflow.define("brand", module.exports = function($) {
         var api = {};
         var doc = document;
-        var $html = $2("html");
-        var $body = $2("body");
+        var $html = $("html");
+        var $body = $("body");
         var namespace = ".w-webflow-badge";
         var location = window.location;
         var isPhantom = /PhantomJS/i.test(navigator.userAgent);
@@ -1389,27 +1191,27 @@
             brandElement = brandElement || createBadge();
             ensureBrand();
             setTimeout(ensureBrand, 500);
-            $2(doc).off(fullScreenEvents, onFullScreenChange).on(fullScreenEvents, onFullScreenChange);
+            $(doc).off(fullScreenEvents, onFullScreenChange).on(fullScreenEvents, onFullScreenChange);
           }
         };
         function onFullScreenChange() {
           var fullScreen = doc.fullScreen || doc.mozFullScreen || doc.webkitIsFullScreen || doc.msFullscreenElement || Boolean(doc.webkitFullscreenElement);
-          $2(brandElement).attr("style", fullScreen ? "display: none !important;" : "");
+          $(brandElement).attr("style", fullScreen ? "display: none !important;" : "");
         }
         function createBadge() {
-          var $brand = $2('<a class="w-webflow-badge"></a>').attr("href", "https://webflow.com?utm_campaign=brandjs");
-          var $logoArt = $2("<img>").attr("src", "https://d3e54v103j8qbb.cloudfront.net/img/webflow-badge-icon.f67cd735e3.svg").attr("alt", "").css({
+          var $brand = $('<a class="w-webflow-badge"></a>').attr("href", "https://webflow.com?utm_campaign=brandjs");
+          var $logoArt = $("<img>").attr("src", "https://d3e54v103j8qbb.cloudfront.net/img/webflow-badge-icon.f67cd735e3.svg").attr("alt", "").css({
             marginRight: "8px",
             width: "16px"
           });
-          var $logoText = $2("<img>").attr("src", "https://d1otoma47x30pg.cloudfront.net/img/webflow-badge-text.6faa6a38cd.svg").attr("alt", "Made in Webflow");
+          var $logoText = $("<img>").attr("src", "https://d1otoma47x30pg.cloudfront.net/img/webflow-badge-text.6faa6a38cd.svg").attr("alt", "Made in Webflow");
           $brand.append($logoArt, $logoText);
           return $brand[0];
         }
         function ensureBrand() {
           var found = $body.children(namespace);
           var match = found.length && found.get(0) === brandElement;
-          var inEditor = Webflow2.env("editor");
+          var inEditor = Webflow.env("editor");
           if (match) {
             if (inEditor) {
               found.remove();
@@ -1431,8 +1233,8 @@
   // shared/render/plugins/BaseSiteModules/webflow-focus-visible.js
   var require_webflow_focus_visible = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-focus-visible.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
-      Webflow2.define("focus-visible", module.exports = function() {
+      var Webflow = require_webflow_lib();
+      Webflow.define("focus-visible", module.exports = function() {
         function applyFocusVisiblePolyfill(scope) {
           var hadKeyboardEvent = true;
           var hadFocusVisibleRecently = false;
@@ -1582,8 +1384,8 @@
   // shared/render/plugins/BaseSiteModules/webflow-focus.js
   var require_webflow_focus = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-focus.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
-      Webflow2.define("focus", module.exports = function() {
+      var Webflow = require_webflow_lib();
+      Webflow.define("focus", module.exports = function() {
         var capturedEvents = [];
         var capturing = false;
         function captureEvent(e) {
@@ -1618,7 +1420,7 @@
           }
         }
         function ready() {
-          if (typeof document !== "undefined" && document.body.hasAttribute("data-wf-focus-within") && Webflow2.env.safari) {
+          if (typeof document !== "undefined" && document.body.hasAttribute("data-wf-focus-within") && Webflow.env.safari) {
             document.addEventListener("mousedown", handler, true);
             document.addEventListener("mouseup", captureEvent, true);
             document.addEventListener("click", captureEvent, true);
@@ -1635,7 +1437,7 @@
   var require_webflow_ix_events = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-ix-events.js"(exports, module) {
       "use strict";
-      var $2 = window.jQuery;
+      var $ = window.jQuery;
       var api = {};
       var eventQueue = [];
       var namespace = ".w-ix";
@@ -1648,14 +1450,14 @@
             return;
           }
           el.__wf_intro = true;
-          $2(el).triggerHandler(api.types.INTRO);
+          $(el).triggerHandler(api.types.INTRO);
         },
         outro: function(i, el) {
           if (!el.__wf_intro) {
             return;
           }
           el.__wf_intro = null;
-          $2(el).triggerHandler(api.types.OUTRO);
+          $(el).triggerHandler(api.types.OUTRO);
         }
       };
       api.triggers = {};
@@ -1670,7 +1472,7 @@
           memo[0](0, memo[1]);
         }
         eventQueue = [];
-        $2.extend(api.triggers, eventTriggers);
+        $.extend(api.triggers, eventTriggers);
       };
       api.async = function() {
         for (var key in eventTriggers) {
@@ -1698,7 +1500,7 @@
         event.initCustomEvent(eventName, true, true, null);
         element.dispatchEvent(event);
       }
-      var $2 = window.jQuery;
+      var $ = window.jQuery;
       var api = {};
       var namespace = ".w-ix";
       var eventTriggers = {
@@ -1719,7 +1521,7 @@
         INTRO: "w-ix-intro" + namespace,
         OUTRO: "w-ix-outro" + namespace
       };
-      $2.extend(api.triggers, eventTriggers);
+      $.extend(api.triggers, eventTriggers);
       module.exports = api;
     }
   });
@@ -2970,10 +2772,10 @@
   var require_es_array_includes = __commonJS({
     "node_modules/core-js/modules/es.array.includes.js"() {
       "use strict";
-      var $2 = require_export();
+      var $ = require_export();
       var $includes = require_array_includes().includes;
       var addToUnscopables = require_add_to_unscopables();
-      $2({ target: "Array", proto: true }, {
+      $({ target: "Array", proto: true }, {
         includes: function includes(el) {
           return $includes(this, el, arguments.length > 1 ? arguments[1] : void 0);
         }
@@ -12362,10 +12164,10 @@
   // shared/render/plugins/BaseSiteModules/webflow-ix2.js
   var require_webflow_ix2 = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-ix2.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
+      var Webflow = require_webflow_lib();
       var ix2 = require_engine();
-      ix2.setEnv(Webflow2.env);
-      Webflow2.define("ix2", module.exports = function() {
+      ix2.setEnv(Webflow.env);
+      Webflow.define("ix2", module.exports = function() {
         return ix2;
       });
     }
@@ -12374,12 +12176,12 @@
   // shared/render/plugins/BaseSiteModules/webflow-links.js
   var require_webflow_links = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-links.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
-      Webflow2.define("links", module.exports = function($2, _) {
+      var Webflow = require_webflow_lib();
+      Webflow.define("links", module.exports = function($, _) {
         var api = {};
-        var $win = $2(window);
+        var $win = $(window);
         var designer;
-        var inApp = Webflow2.env();
+        var inApp = Webflow.env();
         var location = window.location;
         var tempLink = document.createElement("a");
         var linkCurrent = "w--current";
@@ -12389,16 +12191,16 @@
         var slug;
         api.ready = api.design = api.preview = init;
         function init() {
-          designer = inApp && Webflow2.env("design");
-          slug = Webflow2.env("slug") || location.pathname || "";
-          Webflow2.scroll.off(scroll);
+          designer = inApp && Webflow.env("design");
+          slug = Webflow.env("slug") || location.pathname || "";
+          Webflow.scroll.off(scroll);
           anchors = [];
           var links = document.links;
           for (var i = 0; i < links.length; ++i) {
             select(links[i]);
           }
           if (anchors.length) {
-            Webflow2.scroll.on(scroll);
+            Webflow.scroll.on(scroll);
             scroll();
           }
         }
@@ -12408,12 +12210,12 @@
           if (href.indexOf(":") >= 0) {
             return;
           }
-          var $link = $2(link);
+          var $link = $(link);
           if (tempLink.hash.length > 1 && tempLink.host + tempLink.pathname === location.host + location.pathname) {
             if (!/^#[a-zA-Z0-9\-\_]+$/.test(tempLink.hash)) {
               return;
             }
-            var $section = $2(tempLink.hash);
+            var $section = $(tempLink.hash);
             $section.length && anchors.push({
               link: $link,
               sec: $section,
@@ -12462,21 +12264,21 @@
   // shared/render/plugins/BaseSiteModules/webflow-scroll.js
   var require_webflow_scroll = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-scroll.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
-      Webflow2.define("scroll", module.exports = function($2) {
+      var Webflow = require_webflow_lib();
+      Webflow.define("scroll", module.exports = function($) {
         var NS_EVENTS = {
           WF_CLICK_EMPTY: "click.wf-empty-link",
           WF_CLICK_SCROLL: "click.wf-scroll"
         };
         var loc = window.location;
         var history = inIframe() ? null : window.history;
-        var $win = $2(window);
-        var $doc = $2(document);
-        var $body = $2(document.body);
+        var $win = $(window);
+        var $doc = $(document);
+        var $body = $(document.body);
         var animate = window.requestAnimationFrame || window.mozRequestAnimationFrame || window.webkitRequestAnimationFrame || function(fn) {
           window.setTimeout(fn, 15);
         };
-        var rootTag = Webflow2.env("editor") ? ".w-editor-body" : "body";
+        var rootTag = Webflow.env("editor") ? ".w-editor-body" : "body";
         var headerSelector = "header, " + rootTag + " > .header, " + rootTag + " > .w-nav:not([data-no-scroll])";
         var emptyHrefSelector = 'a[href="#"]';
         var localHrefSelector = 'a[href*="#"]:not(.w-tab-link):not(' + emptyHrefSelector + ")";
@@ -12525,7 +12327,7 @@
           var target = evt.currentTarget;
           if (
             // Bail if in Designer
-            Webflow2.env("design") || // Ignore links being used by jQuery mobile
+            Webflow.env("design") || // Ignore links being used by jQuery mobile
             window.$.mobile && /(?:^|\s)ui-link(?:$|\s)/.test(target.className)
           ) {
             return;
@@ -12533,7 +12335,7 @@
           var hash = linksToCurrentPage(target) ? target.hash : "";
           if (hash === "")
             return;
-          var $el = $2(hash);
+          var $el = $(hash);
           if (!$el.length) {
             return;
           }
@@ -12554,7 +12356,7 @@
         }
         function updateHistory(hash) {
           if (loc.hash !== hash && history && history.pushState && // Navigation breaks Chrome when the protocol is `file:`.
-          !(Webflow2.env.chrome && loc.protocol === "file:")) {
+          !(Webflow.env.chrome && loc.protocol === "file:")) {
             var oldHash = history.state && history.state.hash;
             if (oldHash !== hash) {
               history.pushState({
@@ -12582,7 +12384,7 @@
           animate(step);
         }
         function calculateScrollEndPosition($targetEl) {
-          var $header = $2(headerSelector);
+          var $header = $(headerSelector);
           var offsetY = $header.css("position") === "fixed" ? $header.outerHeight() : 0;
           var end = $targetEl.offset().top - offsetY;
           if ($targetEl.data("scroll") === "mid") {
@@ -12636,16 +12438,16 @@
   // shared/render/plugins/BaseSiteModules/webflow-touch.js
   var require_webflow_touch = __commonJS({
     "shared/render/plugins/BaseSiteModules/webflow-touch.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
-      Webflow2.define("touch", module.exports = function($2) {
+      var Webflow = require_webflow_lib();
+      Webflow.define("touch", module.exports = function($) {
         var api = {};
         var getSelection = window.getSelection;
-        $2.event.special.tap = {
+        $.event.special.tap = {
           bindType: "click",
           delegateType: "click"
         };
         api.init = function(el) {
-          el = typeof el === "string" ? $2(el).get(0) : el;
+          el = typeof el === "string" ? $(el).get(0) : el;
           return el ? new Touch(el) : null;
         };
         function Touch(el) {
@@ -12725,10 +12527,10 @@
           this.destroy = destroy;
         }
         function triggerEvent(type, evt, data) {
-          var newEvent = $2.Event(type, {
+          var newEvent = $.Event(type, {
             originalEvent: evt
           });
-          $2(evt.target).trigger(newEvent, data);
+          $(evt.target).trigger(newEvent, data);
         }
         api.instance = api.init(document);
         return api;
@@ -12739,10 +12541,10 @@
   // shared/render/plugins/Form/webflow-forms.js
   var require_webflow_forms = __commonJS({
     "shared/render/plugins/Form/webflow-forms.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
-      Webflow2.define("forms", module.exports = function($2, _) {
+      var Webflow = require_webflow_lib();
+      Webflow.define("forms", module.exports = function($, _) {
         var api = {};
-        var $doc = $2(document);
+        var $doc = $(document);
         var $forms;
         var loc = window.location;
         var retro = window.XDomainRequest && !window.atob;
@@ -12751,7 +12553,7 @@
         var emailField = /e(-)?mail/i;
         var emailValue = /^\S+@\S+$/;
         var alert = window.alert;
-        var inApp = Webflow2.env();
+        var inApp = Webflow.env();
         var listening;
         var formUrl;
         var signFileUrl;
@@ -12766,23 +12568,23 @@
           }
         };
         function init() {
-          siteId = $2("html").attr("data-wf-site");
+          siteId = $("html").attr("data-wf-site");
           formUrl = "https://webflow.com/api/v1/form/" + siteId;
           if (retro && formUrl.indexOf("https://webflow.com") >= 0) {
             formUrl = formUrl.replace("https://webflow.com", "https://formdata.webflow.com");
           }
           signFileUrl = `${formUrl}/signFile`;
-          $forms = $2(namespace + " form");
+          $forms = $(namespace + " form");
           if (!$forms.length) {
             return;
           }
           $forms.each(build);
         }
         function build(i, el) {
-          var $el = $2(el);
-          var data = $2.data(el, namespace);
+          var $el = $(el);
+          var data = $.data(el, namespace);
           if (!data) {
-            data = $2.data(el, namespace, {
+            data = $.data(el, namespace, {
               form: $el
             });
           }
@@ -12821,7 +12623,7 @@
           if (siteId) {
             data.handler = true ? exportedSubmitWebflow : (() => {
               const hostedSubmitHandler = null.default;
-              return hostedSubmitHandler(reset, loc, Webflow2, collectEnterpriseTrackingCookies, preventDefault, findFields, alert, findFileUploads, disableBtn, siteId, afterSubmit, $2, formUrl);
+              return hostedSubmitHandler(reset, loc, Webflow, collectEnterpriseTrackingCookies, preventDefault, findFields, alert, findFileUploads, disableBtn, siteId, afterSubmit, $, formUrl);
             })();
             return;
           }
@@ -12830,7 +12632,7 @@
         function addListeners() {
           listening = true;
           $doc.on("submit", namespace + " form", function(evt) {
-            var data = $2.data(this, namespace);
+            var data = $.data(this, namespace);
             if (data.handler) {
               data.evt = evt;
               data.handler(data);
@@ -12844,22 +12646,22 @@
           const focusVisibleSelectors = ":focus-visible, [data-wf-focus-visible]";
           const CUSTOM_CONTROLS = [["checkbox", CHECKBOX_CLASS_NAME], ["radio", RADIO_INPUT_CLASS_NAME]];
           $doc.on("change", namespace + ` form input[type="checkbox"]:not(` + CHECKBOX_CLASS_NAME + ")", (evt) => {
-            $2(evt.target).siblings(CHECKBOX_CLASS_NAME).toggleClass(CHECKED_CLASS);
+            $(evt.target).siblings(CHECKBOX_CLASS_NAME).toggleClass(CHECKED_CLASS);
           });
           $doc.on("change", namespace + ` form input[type="radio"]`, (evt) => {
-            $2(`input[name="${evt.target.name}"]:not(${CHECKBOX_CLASS_NAME})`).map((i, el) => $2(el).siblings(RADIO_INPUT_CLASS_NAME).removeClass(CHECKED_CLASS));
-            const $target = $2(evt.target);
+            $(`input[name="${evt.target.name}"]:not(${CHECKBOX_CLASS_NAME})`).map((i, el) => $(el).siblings(RADIO_INPUT_CLASS_NAME).removeClass(CHECKED_CLASS));
+            const $target = $(evt.target);
             if (!$target.hasClass("w-radio-input")) {
               $target.siblings(RADIO_INPUT_CLASS_NAME).addClass(CHECKED_CLASS);
             }
           });
           CUSTOM_CONTROLS.forEach(([controlType, customControlClassName]) => {
             $doc.on("focus", namespace + ` form input[type="${controlType}"]:not(` + customControlClassName + ")", (evt) => {
-              $2(evt.target).siblings(customControlClassName).addClass(FOCUSED_CLASS);
-              $2(evt.target).filter(focusVisibleSelectors).siblings(customControlClassName).addClass(FOCUSED_VISIBLE_CLASS);
+              $(evt.target).siblings(customControlClassName).addClass(FOCUSED_CLASS);
+              $(evt.target).filter(focusVisibleSelectors).siblings(customControlClassName).addClass(FOCUSED_VISIBLE_CLASS);
             });
             $doc.on("blur", namespace + ` form input[type="${controlType}"]:not(` + customControlClassName + ")", (evt) => {
-              $2(evt.target).siblings(customControlClassName).removeClass(`${FOCUSED_CLASS} ${FOCUSED_VISIBLE_CLASS}`);
+              $(evt.target).siblings(customControlClassName).removeClass(`${FOCUSED_CLASS} ${FOCUSED_VISIBLE_CLASS}`);
             });
           });
         }
@@ -12883,7 +12685,7 @@
           var status = null;
           result = result || {};
           form.find(':input:not([type="submit"]):not([type="file"])').each(function(i, el) {
-            var field = $2(el);
+            var field = $(el);
             var type = field.attr("type");
             var name = field.attr("data-name") || field.attr("name") || "Field " + (i + 1);
             var value = field.val();
@@ -12896,7 +12698,7 @@
               value = form.find('input[name="' + field.attr("name") + '"]:checked').val() || null;
             }
             if (typeof value === "string") {
-              value = $2.trim(value);
+              value = $.trim(value);
             }
             result[name] = value;
             status = status || getStatus(field, type, name, value);
@@ -12906,11 +12708,11 @@
         function findFileUploads(form) {
           var result = {};
           form.find(':input[type="file"]').each(function(i, el) {
-            var field = $2(el);
+            var field = $(el);
             var name = field.attr("data-name") || field.attr("name") || "File " + (i + 1);
             var value = field.attr("data-value");
             if (typeof value === "string") {
-              value = $2.trim(value);
+              value = $.trim(value);
             }
             result[name] = value;
           });
@@ -12994,7 +12796,7 @@
           var listId = url.indexOf("id=") + 3;
           listId = url.substring(listId, url.indexOf("&", listId));
           payload["b_" + userId + "_" + listId] = "";
-          $2.ajax({
+          $.ajax({
             url,
             data: payload,
             dataType: "jsonp"
@@ -13013,7 +12815,7 @@
           var redirect = data.redirect;
           var success = data.success;
           if (success && redirect) {
-            Webflow2.location(redirect);
+            Webflow.location(redirect);
             return;
           }
           data.done.toggle(success);
@@ -13035,7 +12837,7 @@
             return;
           }
           var file;
-          var $el = $2(form.fileUploads[i]);
+          var $el = $(form.fileUploads[i]);
           var $defaultWrap = $el.find("> .w-file-upload-default");
           var $uploadingWrap = $el.find("> .w-file-upload-uploading");
           var $successWrap = $el.find("> .w-file-upload-success");
@@ -13161,7 +12963,7 @@
             name: file.name,
             size: file.size
           });
-          $2.ajax({
+          $.ajax({
             type: "GET",
             url: `${signFileUrl}?${payload}`,
             crossDomain: true
@@ -13177,7 +12979,7 @@
             formData.append(k, data[k]);
           }
           formData.append("file", file, fileName);
-          $2.ajax({
+          $.ajax({
             type: "POST",
             url,
             data: formData,
@@ -13197,7 +12999,7 @@
   // shared/render/plugins/Lightbox/webflow-lightbox.js
   var require_webflow_lightbox = __commonJS({
     "shared/render/plugins/Lightbox/webflow-lightbox.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
+      var Webflow = require_webflow_lib();
       var CONDITION_INVISIBLE_CLASS = "w-condition-invisible";
       var CONDVIS_SELECTOR = "." + CONDITION_INVISIBLE_CLASS;
       function withoutConditionallyHidden(items) {
@@ -13235,8 +13037,8 @@
           $element.attr("aria-label", labelText);
         }
       }
-      function createLightbox(window2, document2, $2, container) {
-        var tram = $2.tram;
+      function createLightbox(window2, document2, $, container) {
+        var tram = $.tram;
         var isArray = Array.isArray;
         var namespace = "w-lightbox";
         var prefix = namespace + "-";
@@ -13285,9 +13087,9 @@
         lightbox.build = function() {
           lightbox.destroy();
           $refs = {
-            html: $2(document2.documentElement),
+            html: $(document2.documentElement),
             // Empty jQuery object can be used to build new ones using `.add`.
-            empty: $2()
+            empty: $()
           };
           $refs.arrowLeft = dom("control left inactive").attr("role", "button").attr("aria-hidden", true).attr("aria-controls", "w-lightbox-view");
           $refs.arrowRight = dom("control right inactive").attr("role", "button").attr("aria-hidden", true).attr("aria-controls", "w-lightbox-view");
@@ -13305,7 +13107,7 @@
           $refs.content.on("swipe", swipeHandler).on("click", selector("left"), handlerPrev).on("click", selector("right"), handlerNext).on("click", selector("close"), handlerHide).on("click", selector("image, caption"), handlerNext);
           $refs.container.on("click", selector("view"), handlerHide).on("dragstart", selector("img"), preventDefault);
           $refs.lightbox.on("keydown", keyHandler).on("focusin", focusThis);
-          $2(container).append($refs.lightbox);
+          $(container).append($refs.lightbox);
           return lightbox;
         };
         lightbox.destroy = function() {
@@ -13349,7 +13151,7 @@
             var $html;
             var isIframe;
             if (item.html) {
-              $html = $2(item.html);
+              $html = $(item.html);
               isIframe = $html.is("iframe");
               if (isIframe) {
                 $html.on("load", transitionToNewView);
@@ -13408,18 +13210,18 @@
             }
           });
           $refs.close.prop("tabIndex", 0);
-          $2(":focus").addClass("active-lightbox");
+          $(":focus").addClass("active-lightbox");
           if (resetVisibilityState.length === 0) {
-            $2("body").children().each(function() {
-              if ($2(this).hasClass("w-lightbox-backdrop") || $2(this).is("script")) {
+            $("body").children().each(function() {
+              if ($(this).hasClass("w-lightbox-backdrop") || $(this).is("script")) {
                 return;
               }
               resetVisibilityState.push({
-                node: $2(this),
-                hidden: $2(this).attr("aria-hidden"),
-                tabIndex: $2(this).attr("tabIndex")
+                node: $(this),
+                hidden: $(this).attr("aria-hidden"),
+                tabIndex: $(this).attr("tabIndex")
               });
-              $2(this).attr("aria-hidden", true).attr("tabIndex", -1);
+              $(this).attr("aria-hidden", true).attr("tabIndex", -1);
             });
             $refs.close.focus();
           }
@@ -13457,7 +13259,7 @@
         var handlerNext = createHandler(lightbox.next);
         var handlerHide = createHandler(lightbox.hide);
         var itemTapHandler = function(event) {
-          var index = $2(this).index();
+          var index = $(this).index();
           event.preventDefault();
           lightbox.show(index);
         };
@@ -13484,14 +13286,14 @@
           } else if (keyCode === 39 || checkForFocusTrigger(keyCode, "right")) {
             lightbox.next();
           } else if (checkForFocusTrigger(keyCode, "item")) {
-            $2(":focus").click();
+            $(":focus").click();
           }
         }
         function checkForFocusTrigger(keyCode, classMatch) {
           if (keyCode !== 13 && keyCode !== 32) {
             return false;
           }
-          var currentElementClasses = $2(":focus").attr("class");
+          var currentElementClasses = $(":focus").attr("class");
           var classToFind = prefixed(classMatch).trim();
           return currentElementClasses.includes(classToFind);
         }
@@ -13522,7 +13324,7 @@
               }
             });
             resetVisibilityState = [];
-            $2(".active-lightbox").removeClass("active-lightbox").focus();
+            $(".active-lightbox").removeClass("active-lightbox").focus();
           }
         }
         function loadImage(url, callback) {
@@ -13602,7 +13404,7 @@
           return $element.attr("aria-hidden", isHidden).attr("tabIndex", isHidden ? -1 : 0);
         }
         function dom(className, tag) {
-          return addClass($2(document2.createElement(tag || "div")), className);
+          return addClass($(document2.createElement(tag || "div")), className);
         }
         function svgDataUri(width, height) {
           var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '"/>';
@@ -13629,35 +13431,35 @@
         })();
         return lightbox;
       }
-      Webflow2.define("lightbox", module.exports = function($2) {
+      Webflow.define("lightbox", module.exports = function($) {
         var api = {};
-        var inApp = Webflow2.env();
-        var lightbox = createLightbox(window, document, $2, inApp ? "#lightbox-mountpoint" : "body");
-        var $doc = $2(document);
+        var inApp = Webflow.env();
+        var lightbox = createLightbox(window, document, $, inApp ? "#lightbox-mountpoint" : "body");
+        var $doc = $(document);
         var $lightboxes;
         var designer;
         var namespace = ".w-lightbox";
         var groups;
         api.ready = api.design = api.preview = init;
         function init() {
-          designer = inApp && Webflow2.env("design");
+          designer = inApp && Webflow.env("design");
           lightbox.destroy();
           groups = {};
           $lightboxes = $doc.find(namespace);
           $lightboxes.webflowLightBox();
           $lightboxes.each(function() {
-            setAriaLabelIfEmpty($2(this), "open lightbox");
-            $2(this).attr("aria-haspopup", "dialog");
+            setAriaLabelIfEmpty($(this), "open lightbox");
+            $(this).attr("aria-haspopup", "dialog");
           });
         }
         jQuery.fn.extend({
           webflowLightBox: function() {
             var $el = this;
-            $2.each($el, function(i, el) {
-              var data = $2.data(el, namespace);
+            $.each($el, function(i, el) {
+              var data = $.data(el, namespace);
               if (!data) {
-                data = $2.data(el, namespace, {
-                  el: $2(el),
+                data = $.data(el, namespace, {
+                  el: $(el),
                   mode: "images",
                   images: [],
                   embed: ""
@@ -13736,7 +13538,7 @@
   // shared/render/plugins/Navbar/webflow-navbar.js
   var require_webflow_navbar = __commonJS({
     "shared/render/plugins/Navbar/webflow-navbar.js"(exports, module) {
-      var Webflow2 = require_webflow_lib();
+      var Webflow = require_webflow_lib();
       var IXEvents = require_webflow_ix2_events();
       var KEY_CODES = {
         ARROW_LEFT: 37,
@@ -13749,17 +13551,17 @@
         HOME: 36,
         END: 35
       };
-      Webflow2.define("navbar", module.exports = function($2, _) {
+      Webflow.define("navbar", module.exports = function($, _) {
         var api = {};
-        var tram = $2.tram;
-        var $win = $2(window);
-        var $doc = $2(document);
+        var tram = $.tram;
+        var $win = $(window);
+        var $doc = $(document);
         var debounce = _.debounce;
         var $body;
         var $navbars;
         var designer;
         var inEditor;
-        var inApp = Webflow2.env();
+        var inApp = Webflow.env();
         var overlay = '<div class="w-nav-overlay" data-wf-ignore />';
         var namespace = ".w-nav";
         var navbarOpenedButton = "w--open";
@@ -13768,19 +13570,19 @@
         var navbarOpenedDropdownList = "w--nav-dropdown-list-open";
         var navbarOpenedLink = "w--nav-link-open";
         var ix = IXEvents.triggers;
-        var menuSibling = $2();
+        var menuSibling = $();
         api.ready = api.design = api.preview = init;
         api.destroy = function() {
-          menuSibling = $2();
+          menuSibling = $();
           removeListeners();
           if ($navbars && $navbars.length) {
             $navbars.each(teardown);
           }
         };
         function init() {
-          designer = inApp && Webflow2.env("design");
-          inEditor = Webflow2.env("editor");
-          $body = $2(document.body);
+          designer = inApp && Webflow.env("design");
+          inEditor = Webflow.env("editor");
+          $body = $(document.body);
           $navbars = $doc.find(namespace);
           if (!$navbars.length) {
             return;
@@ -13790,19 +13592,19 @@
           addListeners();
         }
         function removeListeners() {
-          Webflow2.resize.off(resizeAll);
+          Webflow.resize.off(resizeAll);
         }
         function addListeners() {
-          Webflow2.resize.on(resizeAll);
+          Webflow.resize.on(resizeAll);
         }
         function resizeAll() {
           $navbars.each(resize);
         }
         function build(i, el) {
-          var $el = $2(el);
-          var data = $2.data(el, namespace);
+          var $el = $(el);
+          var data = $.data(el, namespace);
           if (!data) {
-            data = $2.data(el, namespace, {
+            data = $.data(el, namespace, {
               open: false,
               el: $el,
               config: {},
@@ -13848,10 +13650,10 @@
           resize(i, el);
         }
         function teardown(i, el) {
-          var data = $2.data(el, namespace);
+          var data = $.data(el, namespace);
           if (data) {
             removeOverlay(data);
-            $2.removeData(el, namespace);
+            $.removeData(el, namespace);
           }
         }
         function removeOverlay(data) {
@@ -13866,7 +13668,7 @@
           if (data.overlay) {
             return;
           }
-          data.overlay = $2(overlay).appendTo(data.el);
+          data.overlay = $(overlay).appendTo(data.el);
           data.overlay.attr("id", data.overlayContainerId);
           data.parent = data.menu.parent();
           close(data, true);
@@ -13997,9 +13799,9 @@
         }
         function navigate(data) {
           return function(evt) {
-            var link = $2(this);
+            var link = $(this);
             var href = link.attr("href");
-            if (!Webflow2.validClick(evt.currentTarget)) {
+            if (!Webflow.validClick(evt.currentTarget)) {
               evt.preventDefault();
               return;
             }
@@ -14013,7 +13815,7 @@
             $doc.off("click" + namespace, data.outside);
           }
           return function(evt) {
-            var $target = $2(evt.target);
+            var $target = $(evt.target);
             if (inEditor && $target.closest(".w-editor-bem-EditorOverlay").length) {
               return;
             }
@@ -14030,7 +13832,7 @@
           }
         });
         function resize(i, el) {
-          var data = $2.data(el, namespace);
+          var data = $.data(el, namespace);
           var collapsed = data.collapsed = data.button.css("display") !== "none";
           if (data.open && !collapsed && !designer) {
             close(data, true);
@@ -14051,7 +13853,7 @@
             containMax = "";
           }
           return function(i, link) {
-            link = $2(link);
+            link = $(link);
             link.css(maxWidth, "");
             if (link.css(maxWidth) === "none") {
               link.css(maxWidth, containMax);
@@ -14087,7 +13889,7 @@
           var navbarEl = data.el[0];
           resize(0, navbarEl);
           ix.intro(0, navbarEl);
-          Webflow2.redraw.up();
+          Webflow.redraw.up();
           if (!designer) {
             $doc.on("click" + namespace, data.outside);
           }
@@ -14187,8 +13989,6 @@
   });
 
   // <stdin>
-  require_objectFitPolyfill_basic();
-  require_webflow_bgvideo();
   require_webflow_brand();
   require_webflow_focus_visible();
   require_webflow_focus();
@@ -14246,5 +14046,5 @@ timm/lib/timm.js:
  * Webflow: Interactions 2.0: Init
  */
 Webflow.require('ix2').init(
-{"events":{"e":{"id":"e","name":"","animationType":"preset","eventTypeId":"NAVBAR_OPEN","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-407"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|e13fb8e0-3bdf-7454-9ac0-ef92f2cb12a6","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|e13fb8e0-3bdf-7454-9ac0-ef92f2cb12a6","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1626227992075},"e-2":{"id":"e-2","name":"","animationType":"preset","eventTypeId":"NAVBAR_CLOSE","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-2","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-590"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|e13fb8e0-3bdf-7454-9ac0-ef92f2cb12a6","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|e13fb8e0-3bdf-7454-9ac0-ef92f2cb12a6","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1626227992075},"e-5":{"id":"e-5","name":"","animationType":"preset","eventTypeId":"NAVBAR_OPEN","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-6"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b59e0cf3e397fd46e66f24|64cb8c1c-79d5-0f4b-c1f9-b66f187b3d26","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b59e0cf3e397fd46e66f24|64cb8c1c-79d5-0f4b-c1f9-b66f187b3d26","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689624122843},"e-6":{"id":"e-6","name":"","animationType":"preset","eventTypeId":"NAVBAR_CLOSE","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-2","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-5"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b59e0cf3e397fd46e66f24|64cb8c1c-79d5-0f4b-c1f9-b66f187b3d26","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b59e0cf3e397fd46e66f24|64cb8c1c-79d5-0f4b-c1f9-b66f187b3d26","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689624122843},"e-19":{"id":"e-19","name":"","animationType":"preset","eventTypeId":"SCROLL_INTO_VIEW","action":{"id":"","actionTypeId":"SLIDE_EFFECT","instant":false,"config":{"actionListId":"slideInBottom","autoStopEventId":"e-20"}},"mediaQueries":["main","medium","small","tiny"],"target":{"selector":".container-large","originalId":"64b377fef1050d27151c8058|1985d4d3-9071-7efa-278f-fec1ce037641","appliesTo":"CLASS"},"targets":[{"selector":".container-large","originalId":"64b377fef1050d27151c8058|1985d4d3-9071-7efa-278f-fec1ce037641","appliesTo":"CLASS"}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":0,"scrollOffsetUnit":"%","delay":200,"direction":"BOTTOM","effectIn":true},"createdOn":1689806077734},"e-21":{"id":"e-21","name":"","animationType":"preset","eventTypeId":"SCROLL_INTO_VIEW","action":{"id":"","actionTypeId":"SLIDE_EFFECT","instant":false,"config":{"actionListId":"slideInBottom","autoStopEventId":"e-22"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|defc68f0-e678-38e6-2b37-7b1e99cf1b41","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|defc68f0-e678-38e6-2b37-7b1e99cf1b41","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":0,"scrollOffsetUnit":"%","delay":727,"direction":"BOTTOM","effectIn":true},"createdOn":1689806198472},"e-23":{"id":"e-23","name":"","animationType":"custom","eventTypeId":"MOUSE_OVER","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-7","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-24"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":0,"direction":"LEFT","effectIn":true},"createdOn":1689890364526},"e-24":{"id":"e-24","name":"","animationType":"custom","eventTypeId":"MOUSE_OUT","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-8","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-23"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689890364527},"e-25":{"id":"e-25","name":"","animationType":"custom","eventTypeId":"MOUSE_OVER","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-7","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-26"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|6a3095f8-3bb5-22ad-ef8e-537ac2c7720a","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|6a3095f8-3bb5-22ad-ef8e-537ac2c7720a","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689891402266},"e-26":{"id":"e-26","name":"","animationType":"custom","eventTypeId":"MOUSE_OUT","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-8","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-25"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|6a3095f8-3bb5-22ad-ef8e-537ac2c7720a","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|6a3095f8-3bb5-22ad-ef8e-537ac2c7720a","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689891402267},"e-27":{"id":"e-27","name":"","animationType":"preset","eventTypeId":"MOUSE_OVER","action":{"id":"","actionTypeId":"POP_EFFECT","instant":false,"config":{"actionListId":"pop","autoStopEventId":"e-28"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b59e0cf3e397fd46e66f24|c6ef6806-cee6-8bdf-5a38-9cf574993a75","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b59e0cf3e397fd46e66f24|c6ef6806-cee6-8bdf-5a38-9cf574993a75","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":0,"direction":null,"effectIn":null},"createdOn":1691359662354},"e-29":{"id":"e-29","name":"","animationType":"preset","eventTypeId":"SCROLL_INTO_VIEW","action":{"id":"","actionTypeId":"SLIDE_EFFECT","config":{"actionListId":"slideInBottom","autoStopEventId":"e-30"},"instant":false},"mediaQueries":["main","medium","small","tiny"],"target":{"appliesTo":"ELEMENT","styleBlockIds":[],"id":"64b377fef1050d27151c8058|6c170817-c45a-ab59-6a7a-c4d2caac8263"},"targets":[],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":0,"scrollOffsetUnit":"%","delay":200,"direction":"BOTTOM","effectIn":true},"createdOn":1691446351331}},"actionLists":{"a":{"id":"a","title":"Navbar 1 menu [Close]","actionItemGroups":[{"actionItems":[{"id":"a-n","actionTypeId":"STYLE_SIZE","config":{"delay":0,"easing":"inOutQuint","duration":200,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-middle","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c27"]},"widthValue":0,"widthUnit":"px","heightUnit":"PX","locked":false}},{"id":"a-n-2","actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"inOutQuint","duration":400,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-bottom","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c2b"]},"yValue":-8,"xUnit":"PX","yUnit":"px","zUnit":"PX"}},{"id":"a-n-3","actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"inOutQuint","duration":400,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-top","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c33"]},"yValue":8,"xUnit":"PX","yUnit":"px","zUnit":"PX"}},{"id":"a-n-4","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"inOutQuint","duration":600,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-top","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c33"]},"zValue":-45,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}},{"id":"a-n-5","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"inOutQuint","duration":600,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-bottom","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c2b"]},"zValue":45,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}}]}],"useFirstGroupAsInitialState":false,"createdOn":1626168378054},"a-2":{"id":"a-2","title":"Navbar 1 menu [Open]","actionItemGroups":[{"actionItems":[{"id":"a-2-n","actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"inOutQuint","duration":600,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-bottom","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c2b"]},"yValue":0,"xUnit":"PX","yUnit":"px","zUnit":"PX"}},{"id":"a-2-n-2","actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"inOutQuint","duration":600,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-top","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c33"]},"yValue":0,"xUnit":"PX","yUnit":"px","zUnit":"PX"}},{"id":"a-2-n-3","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"inOutQuint","duration":400,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-bottom","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c2b"]},"zValue":0,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}},{"id":"a-2-n-4","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"inOutQuint","duration":400,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-top","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c33"]},"zValue":0,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}},{"id":"a-2-n-5","actionTypeId":"STYLE_SIZE","config":{"delay":400,"easing":"inOutQuint","duration":200,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-middle","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c27"]},"widthValue":24,"widthUnit":"px","heightUnit":"PX","locked":false}}]}],"useFirstGroupAsInitialState":false,"createdOn":1626168766736},"a-7":{"id":"a-7","title":"rotate","actionItemGroups":[{"actionItems":[{"id":"a-7-n","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"","duration":100,"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca"},"xValue":0,"yValue":null,"zValue":-16,"xUnit":"deg","yUnit":"deg","zUnit":"deg"}}]}],"useFirstGroupAsInitialState":false,"createdOn":1689890504166},"a-8":{"id":"a-8","title":"rotate out","actionItemGroups":[{"actionItems":[{"id":"a-8-n","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"","duration":100,"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca"},"zValue":-16,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}}]},{"actionItems":[{"id":"a-8-n-2","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"","duration":100,"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca"},"zValue":0,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}}]}],"useFirstGroupAsInitialState":false,"createdOn":1689890761017},"slideInBottom":{"id":"slideInBottom","useFirstGroupAsInitialState":true,"actionItemGroups":[{"actionItems":[{"actionTypeId":"STYLE_OPACITY","config":{"delay":0,"duration":0,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"value":0}}]},{"actionItems":[{"actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"duration":0,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"xValue":0,"yValue":100,"xUnit":"PX","yUnit":"PX","zUnit":"PX"}}]},{"actionItems":[{"actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"outQuart","duration":1000,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"xValue":0,"yValue":0,"xUnit":"PX","yUnit":"PX","zUnit":"PX"}},{"actionTypeId":"STYLE_OPACITY","config":{"delay":0,"easing":"outQuart","duration":1000,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"value":1}}]}]},"pop":{"id":"pop","actionItemGroups":[{"actionItems":[{"actionTypeId":"TRANSFORM_SCALE","config":{"delay":0,"easing":"outQuart","duration":250,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"xValue":0.7500000000000001,"yValue":0.7500000000000001}}]},{"actionItems":[{"actionTypeId":"TRANSFORM_SCALE","config":{"delay":0,"easing":"outElastic","duration":1000,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"xValue":1,"yValue":1}}]}]}},"site":{"mediaQueries":[{"key":"main","min":992,"max":10000},{"key":"medium","min":768,"max":991},{"key":"small","min":480,"max":767},{"key":"tiny","min":0,"max":479}]}}
+{"events":{"e":{"id":"e","name":"","animationType":"preset","eventTypeId":"NAVBAR_OPEN","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-407"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|e13fb8e0-3bdf-7454-9ac0-ef92f2cb12a6","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|e13fb8e0-3bdf-7454-9ac0-ef92f2cb12a6","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1626227992075},"e-2":{"id":"e-2","name":"","animationType":"preset","eventTypeId":"NAVBAR_CLOSE","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-2","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-590"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|e13fb8e0-3bdf-7454-9ac0-ef92f2cb12a6","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|e13fb8e0-3bdf-7454-9ac0-ef92f2cb12a6","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1626227992075},"e-5":{"id":"e-5","name":"","animationType":"preset","eventTypeId":"NAVBAR_OPEN","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-6"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b59e0cf3e397fd46e66f24|64cb8c1c-79d5-0f4b-c1f9-b66f187b3d26","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b59e0cf3e397fd46e66f24|64cb8c1c-79d5-0f4b-c1f9-b66f187b3d26","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689624122843},"e-6":{"id":"e-6","name":"","animationType":"preset","eventTypeId":"NAVBAR_CLOSE","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-2","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-5"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b59e0cf3e397fd46e66f24|64cb8c1c-79d5-0f4b-c1f9-b66f187b3d26","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b59e0cf3e397fd46e66f24|64cb8c1c-79d5-0f4b-c1f9-b66f187b3d26","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689624122843},"e-19":{"id":"e-19","name":"","animationType":"preset","eventTypeId":"SCROLL_INTO_VIEW","action":{"id":"","actionTypeId":"SLIDE_EFFECT","instant":false,"config":{"actionListId":"slideInBottom","autoStopEventId":"e-20"}},"mediaQueries":["main","medium","small","tiny"],"target":{"selector":".container-large","originalId":"64b377fef1050d27151c8058|1985d4d3-9071-7efa-278f-fec1ce037641","appliesTo":"CLASS"},"targets":[{"selector":".container-large","originalId":"64b377fef1050d27151c8058|1985d4d3-9071-7efa-278f-fec1ce037641","appliesTo":"CLASS"}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":0,"scrollOffsetUnit":"%","delay":200,"direction":"BOTTOM","effectIn":true},"createdOn":1689806077734},"e-21":{"id":"e-21","name":"","animationType":"preset","eventTypeId":"SCROLL_INTO_VIEW","action":{"id":"","actionTypeId":"SLIDE_EFFECT","instant":false,"config":{"actionListId":"slideInBottom","autoStopEventId":"e-22"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|defc68f0-e678-38e6-2b37-7b1e99cf1b41","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|defc68f0-e678-38e6-2b37-7b1e99cf1b41","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":0,"scrollOffsetUnit":"%","delay":727,"direction":"BOTTOM","effectIn":true},"createdOn":1689806198472},"e-23":{"id":"e-23","name":"","animationType":"custom","eventTypeId":"MOUSE_OVER","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-7","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-24"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":0,"direction":"LEFT","effectIn":true},"createdOn":1689890364526},"e-24":{"id":"e-24","name":"","animationType":"custom","eventTypeId":"MOUSE_OUT","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-8","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-23"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689890364527},"e-25":{"id":"e-25","name":"","animationType":"custom","eventTypeId":"MOUSE_OVER","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-7","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-26"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|6a3095f8-3bb5-22ad-ef8e-537ac2c7720a","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|6a3095f8-3bb5-22ad-ef8e-537ac2c7720a","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689891402266},"e-26":{"id":"e-26","name":"","animationType":"custom","eventTypeId":"MOUSE_OUT","action":{"id":"","actionTypeId":"GENERAL_START_ACTION","config":{"delay":0,"easing":"","duration":0,"actionListId":"a-8","affectedElements":{},"playInReverse":false,"autoStopEventId":"e-25"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|6a3095f8-3bb5-22ad-ef8e-537ac2c7720a","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|6a3095f8-3bb5-22ad-ef8e-537ac2c7720a","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":null,"direction":null,"effectIn":null},"createdOn":1689891402267},"e-27":{"id":"e-27","name":"","animationType":"preset","eventTypeId":"MOUSE_OVER","action":{"id":"","actionTypeId":"POP_EFFECT","instant":false,"config":{"actionListId":"pop","autoStopEventId":"e-28"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b59e0cf3e397fd46e66f24|c6ef6806-cee6-8bdf-5a38-9cf574993a75","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b59e0cf3e397fd46e66f24|c6ef6806-cee6-8bdf-5a38-9cf574993a75","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":null,"scrollOffsetUnit":null,"delay":0,"direction":null,"effectIn":null},"createdOn":1691359662354},"e-29":{"id":"e-29","name":"","animationType":"preset","eventTypeId":"SCROLL_INTO_VIEW","action":{"id":"","actionTypeId":"SLIDE_EFFECT","instant":false,"config":{"actionListId":"slideInBottom","autoStopEventId":"e-30"}},"mediaQueries":["main","medium","small","tiny"],"target":{"id":"64b377fef1050d27151c8058|6c170817-c45a-ab59-6a7a-c4d2caac8263","appliesTo":"ELEMENT","styleBlockIds":[]},"targets":[{"id":"64b377fef1050d27151c8058|6c170817-c45a-ab59-6a7a-c4d2caac8263","appliesTo":"ELEMENT","styleBlockIds":[]}],"config":{"loop":false,"playInReverse":false,"scrollOffsetValue":0,"scrollOffsetUnit":"%","delay":200,"direction":"BOTTOM","effectIn":true},"createdOn":1691446351331}},"actionLists":{"a":{"id":"a","title":"Navbar 1 menu [Close]","actionItemGroups":[{"actionItems":[{"id":"a-n","actionTypeId":"STYLE_SIZE","config":{"delay":0,"easing":"inOutQuint","duration":200,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-middle","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c27"]},"widthValue":0,"widthUnit":"px","heightUnit":"PX","locked":false}},{"id":"a-n-2","actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"inOutQuint","duration":400,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-bottom","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c2b"]},"yValue":-8,"xUnit":"PX","yUnit":"px","zUnit":"PX"}},{"id":"a-n-3","actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"inOutQuint","duration":400,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-top","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c33"]},"yValue":8,"xUnit":"PX","yUnit":"px","zUnit":"PX"}},{"id":"a-n-4","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"inOutQuint","duration":600,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-top","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c33"]},"zValue":-45,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}},{"id":"a-n-5","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"inOutQuint","duration":600,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-bottom","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c2b"]},"zValue":45,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}}]}],"useFirstGroupAsInitialState":false,"createdOn":1626168378054},"a-2":{"id":"a-2","title":"Navbar 1 menu [Open]","actionItemGroups":[{"actionItems":[{"id":"a-2-n","actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"inOutQuint","duration":600,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-bottom","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c2b"]},"yValue":0,"xUnit":"PX","yUnit":"px","zUnit":"PX"}},{"id":"a-2-n-2","actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"inOutQuint","duration":600,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-top","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c33"]},"yValue":0,"xUnit":"PX","yUnit":"px","zUnit":"PX"}},{"id":"a-2-n-3","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"inOutQuint","duration":400,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-bottom","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c2b"]},"zValue":0,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}},{"id":"a-2-n-4","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"inOutQuint","duration":400,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-top","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c33"]},"zValue":0,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}},{"id":"a-2-n-5","actionTypeId":"STYLE_SIZE","config":{"delay":400,"easing":"inOutQuint","duration":200,"target":{"useEventTarget":"CHILDREN","selector":".menu-icon1_line-middle","selectorGuids":["c5a1f036-1e18-041e-aea3-5623bb5c3c27"]},"widthValue":24,"widthUnit":"px","heightUnit":"PX","locked":false}}]}],"useFirstGroupAsInitialState":false,"createdOn":1626168766736},"a-7":{"id":"a-7","title":"rotate","actionItemGroups":[{"actionItems":[{"id":"a-7-n","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"","duration":100,"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca"},"xValue":0,"yValue":null,"zValue":-16,"xUnit":"deg","yUnit":"deg","zUnit":"deg"}}]}],"useFirstGroupAsInitialState":false,"createdOn":1689890504166},"a-8":{"id":"a-8","title":"rotate out","actionItemGroups":[{"actionItems":[{"id":"a-8-n","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"","duration":100,"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca"},"zValue":-16,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}}]},{"actionItems":[{"id":"a-8-n-2","actionTypeId":"TRANSFORM_ROTATE","config":{"delay":0,"easing":"","duration":100,"target":{"id":"64b377fef1050d27151c8058|f5330c18-dd7a-4332-6da5-36cc6d5dedca"},"zValue":0,"xUnit":"DEG","yUnit":"DEG","zUnit":"deg"}}]}],"useFirstGroupAsInitialState":false,"createdOn":1689890761017},"slideInBottom":{"id":"slideInBottom","useFirstGroupAsInitialState":true,"actionItemGroups":[{"actionItems":[{"actionTypeId":"STYLE_OPACITY","config":{"delay":0,"duration":0,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"value":0}}]},{"actionItems":[{"actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"duration":0,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"xValue":0,"yValue":100,"xUnit":"PX","yUnit":"PX","zUnit":"PX"}}]},{"actionItems":[{"actionTypeId":"TRANSFORM_MOVE","config":{"delay":0,"easing":"outQuart","duration":1000,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"xValue":0,"yValue":0,"xUnit":"PX","yUnit":"PX","zUnit":"PX"}},{"actionTypeId":"STYLE_OPACITY","config":{"delay":0,"easing":"outQuart","duration":1000,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"value":1}}]}]},"pop":{"id":"pop","actionItemGroups":[{"actionItems":[{"actionTypeId":"TRANSFORM_SCALE","config":{"delay":0,"easing":"outQuart","duration":250,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"xValue":0.7500000000000001,"yValue":0.7500000000000001}}]},{"actionItems":[{"actionTypeId":"TRANSFORM_SCALE","config":{"delay":0,"easing":"outElastic","duration":1000,"target":{"id":"N/A","appliesTo":"TRIGGER_ELEMENT","useEventTarget":true},"xValue":1,"yValue":1}}]}]}},"site":{"mediaQueries":[{"key":"main","min":992,"max":10000},{"key":"medium","min":768,"max":991},{"key":"small","min":480,"max":767},{"key":"tiny","min":0,"max":479}]}}
 );
